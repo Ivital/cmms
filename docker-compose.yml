@@ -93,7 +93,7 @@ services:
       - "8080"
 
   frontend:
-    image: intelloop/atlas-cmms-frontend
+    image: ghcr.io/ivital/cmms-frontend:latest
     container_name: atlas-cmms-frontend
     environment:
       API_URL: /api

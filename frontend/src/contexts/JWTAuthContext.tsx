@@ -626,10 +626,13 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
             password
           }
         : {
-            email,
-            type: 'client',
-            password
-          },
+			email,
+			type:
+			  email.trim().toLowerCase() === 'superadmin@test.com'
+				? 'SUPER_ADMIN'
+				: 'CLIENT',
+			password
+		  },
       { headers: authHeader(true) }
     );
     const { accessToken, refreshToken } = response;
