@@ -136,37 +136,41 @@ function App() {
 
   useEffect(() => {
     const arr = location.pathname.split('/');
+    const subscription = company?.subscription;
+
     if (
       !['downgrade', 'upgrade'].includes(arr[arr.length - 1]) &&
       isInitialized &&
-      isAuthenticated
-    )
-      if (company.subscription.downgradeNeeded) {
+      isAuthenticated &&
+      subscription
+    ) {
+      if (subscription.downgradeNeeded) {
         navigate('/app/downgrade');
-      } else if (user.ownsCompany && company.subscription.upgradeNeeded) {
+      } else if (user?.ownsCompany && subscription.upgradeNeeded) {
         navigate('/app/upgrade');
       }
-  }, [company, isInitialized, isAuthenticated, location]);
+    }
+  }, [company, user, isInitialized, isAuthenticated, location, navigate]);
 
   useEffect(() => {
     const arr = location.pathname.split('/');
+    const superAccountRelations = user?.superAccountRelations ?? [];
+
     if (
       !['switch-account'].includes(arr[arr.length - 1]) &&
       isInitialized &&
-      isAuthenticated
-    )
-      if (
-        user.superAccountRelations.length &&
-        ![
-          'work-orders',
-          'analytics',
-          'requests',
-          'preventive-maintenances'
-        ].includes(arr[2])
-      ) {
-        navigate('/app/switch-account');
-      }
-  }, [user, isInitialized, isAuthenticated, location]);
+      isAuthenticated &&
+      superAccountRelations.length > 0 &&
+      ![
+        'work-orders',
+        'analytics',
+        'requests',
+        'preventive-maintenances'
+      ].includes(arr[2])
+    ) {
+      navigate('/app/switch-account');
+    }
+  }, [user, isInitialized, isAuthenticated, location, navigate]);
 
   useEffect(() => {
     dispatch(getLicenseValidity());
