@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    image: ghcr.io/ivital/cmms-backend:latest
+    image: ghcr.io/ivital/cmms-backend:${CMMS_IMAGE_TAG:-latest}
     container_name: atlas-cmms-backend
     depends_on:
       - postgres
@@ -93,7 +93,7 @@ services:
       - "8080"
 
   frontend:
-    image: ghcr.io/ivital/cmms-frontend:latest
+    image: ghcr.io/ivital/cmms-frontend:${CMMS_IMAGE_TAG:-latest}
     container_name: atlas-cmms-frontend
     environment:
       API_URL: /api

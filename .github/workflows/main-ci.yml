@@ -131,6 +131,7 @@ jobs:
       - self-hosted
       - linux
       - x64
+      - cmms
 
     timeout-minutes: 20
 
@@ -139,61 +140,11 @@ jobs:
       url: https://www.toir2.zakryttya.org.ua
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Deploy
         shell: bash
         run: |
           set -Eeuo pipefail
-
-          APP_DIR=/var/www/toir2
-
-          cd "$APP_DIR"
-
-          echo "== Fetch source =="
-          git fetch origin main
-          git reset --hard "${GITHUB_SHA}"
-
-          echo "== Validate compose =="
-          docker compose config >/dev/null
-
-          echo "== Pull application images =="
-          docker compose pull api frontend
-
-          echo "== Recreate application =="
-          docker compose up -d --no-deps api
-          docker compose up -d --no-deps frontend
-          docker compose up -d nginx
-
-          echo "== Wait for health =="
-          for i in $(seq 1 60); do
-            code="$(curl -sS -o /tmp/toir2-health.json \
-              -w '%{http_code}' \
-              http://127.0.0.1:3000/api/health-check || true)"
-
-            if [ "$code" = "200" ]; then
-              cat /tmp/toir2-health.json
-              echo
-              echo "TOIR2 health check passed"
-              exit 0
-            fi
-
-            echo "Attempt $i/60: HTTP $code"
-            sleep 5
-          done
-
-          echo "Health check failed" >&2
-          docker compose ps >&2
-          docker compose logs --tail=200 api frontend nginx >&2
-          exit 1
+          sudo -n /usr/local/sbin/deploy-cmms "${GITHUB_SHA}"
 
       - name: Public smoke test
         shell: bash
@@ -209,10 +160,3 @@ jobs:
 
           echo
           echo "Public smoke test passed"
-
-      - name: Show deployment status
-        if: always()
-        shell: bash
-        run: |
-          cd /var/www/toir2
-          docker compose ps
