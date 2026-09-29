@@ -53,7 +53,7 @@ interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   tokenType: string;
-  expiresAt: string; // ISO date string
+  expiresAt: string;
 }
 
 export type FieldConfigurationsType = 'workOrder' | 'request';
@@ -527,15 +527,18 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
   const [state, dispatch] = useReducer(reducer, initialAuthState);
   const { loginUser: loginZendesk, logoutUser: logoutZendesk } = useZendesk();
   const utmParams = useUtmTracker();
+
   const switchLanguage = async ({ lng }: { lng: any }) => {
     await loadLanguage(lng);
     internationalization.changeLanguage(lng);
   };
+
   const updateUserInfos = async () => {
     const user = await getUserInfos();
     setCompanyId(user.companyId);
     return user;
   };
+
   const setupUser = async (
     user: UserResponseDTO,
     companySettings: CompanySettings
@@ -558,6 +561,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       username: user.firstName + ' ' + user.lastName
     });
   };
+
   const getInfos = async (): Promise<void> => {
     try {
       const accessToken = window.localStorage.getItem('accessToken');
@@ -613,6 +617,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       });
     }
   };
+
   const login = async (
     email: string,
     password: string,
@@ -626,18 +631,19 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
             password
           }
         : {
-			email,
-			type:
-			  email.trim().toLowerCase() === 'superadmin@test.com'
-				? 'SUPER_ADMIN'
-				: 'CLIENT',
-			password
-		  },
+            email,
+            type:
+              email.trim().toLowerCase() === 'superadmin@test.com'
+                ? 'SUPER_ADMIN'
+                : 'CLIENT',
+            password
+          },
       { headers: authHeader(true) }
     );
     const { accessToken, refreshToken } = response;
     return loginInternal(accessToken, refreshToken);
   };
+
   const loginInternal = async (accessToken: string, refreshToken: string) => {
     globalDispatch(revertAll());
     setSession(accessToken, refreshToken);
@@ -659,6 +665,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const switchAccount = async (id: number): Promise<void> => {
     const response = await api.get<AuthResponse>(
       `auth/switch-account?id=${id}`
@@ -669,6 +676,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       .forEach((key) => localStorage.removeItem(key));
     return loginInternal(accessToken, refreshToken);
   };
+
   const logout = async (): Promise<void> => {
     try {
       logoutZendesk();
@@ -745,6 +753,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const patchCompany = async (values: Partial<Company>): Promise<void> => {
     const company = await api.patch<Company>(`companies/${state.company.id}`, {
       ...state.company,
@@ -757,6 +766,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const patchUser = async (values: Partial<OwnUser>): Promise<void> => {
     const user = await api.patch<UserResponseDTO>(`users/${state.user.id}`, {
       ...state.user,
@@ -769,6 +779,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const patchSubscription = async (values: OwnSubscription): Promise<void> => {
     dispatch({
       type: 'PATCH_SUBSCRIPTION',
@@ -777,6 +788,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const cancelSubscription = async (): Promise<void> => {
     const response = await api.get<{ success: boolean }>(`paddle/cancel`);
     const { success } = response;
@@ -787,6 +799,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       });
     }
   };
+
   const resumeSubscription = async (): Promise<void> => {
     const response = await api.get<{ success: boolean }>(`paddle/resume`);
     const { success } = response;
@@ -797,6 +810,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       });
     }
   };
+
   const updatePassword = async (values: {
     oldPassword: string;
     newPassword: string;
@@ -809,6 +823,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
     setSession(accessToken, refreshToken);
     return true;
   };
+
   const resetPassword = async (email: string): Promise<boolean> => {
     const response = await api.get<{ success: boolean }>(
       `auth/resetpwd?email=${email}`,
@@ -817,6 +832,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
     const { success } = response;
     return success;
   };
+
   const fetchUserSettings = async (): Promise<void> => {
     const userSettings = await getUserSettings(state.user.userSettingsId);
     dispatch({
@@ -838,6 +854,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const fetchCompany = async (): Promise<void> => {
     const company = await api.get<Company>(state.user.companyId);
     dispatch({
@@ -847,6 +864,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const patchGeneralPreferences = async (
     values: Partial<GeneralPreferences>
   ): Promise<void> => {
@@ -907,18 +925,22 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       }
     });
   };
+
   const hasViewPermission = (permissionEntity: PermissionEntity) => {
     return state.user.role.viewPermissions.includes(permissionEntity);
   };
+
   const hasViewOtherPermission = (permissionEntity: PermissionEntity) => {
     return state.user.role.viewOtherPermissions.includes(permissionEntity);
   };
+
   const hasCreatePermission = (permissionEntity: PermissionEntity) => {
     return (
       state.user.role.createPermissions.includes(permissionEntity) &&
       state.user.superAccountRelations.length === 0
     );
   };
+
   const hasEditPermission = <Entity extends Audit>(
     permissionEntity: PermissionEntity,
     entity: Entity
@@ -1049,6 +1071,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       state.user.role.editOtherPermissions.includes(permissionEntity)
     );
   };
+
   const hasDeletePermission = <Entity extends Audit>(
     permissionEntity: PermissionEntity,
     entity: Entity
@@ -1060,11 +1083,12 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       state.user.role.deleteOtherPermissions.includes(permissionEntity)
     );
   };
+
   const hasFeature = (feature: PlanFeature) => {
-    return state.company.subscription.subscriptionPlan.features.includes(
-      feature
-    );
+    const subscriptionPlan = state.company?.subscription?.subscriptionPlan;
+    return subscriptionPlan?.features?.includes(feature) ?? false;
   };
+
   const getFilteredFields = (defaultFields: Array<IField>): IField[] => {
     let fields = [...defaultFields];
     if (!hasFeature(PlanFeature.FILE)) {
@@ -1088,6 +1112,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
     });
     return fields;
   };
+
   const upgrade = async (users: number[]) => {
     try {
       const { success } = await api.post<{ success: boolean }>(
@@ -1106,6 +1131,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       return false;
     }
   };
+
   const downgrade = async (users: number[]) => {
     try {
       const { success } = await api.get<{ success: boolean }>(
@@ -1121,6 +1147,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       return false;
     }
   };
+
   useEffect(() => {
     getInfos();
   }, []);

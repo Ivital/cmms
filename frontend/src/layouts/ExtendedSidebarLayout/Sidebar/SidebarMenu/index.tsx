@@ -62,7 +62,7 @@ const SubMenuWrapper = styled(Box)(
             color: ${theme.palette.primary.contrastText};
           }
         }
-    
+
         .MuiButton-root {
           display: flex;
           color: ${theme.colors.alpha.trueWhite[70]};
@@ -86,7 +86,7 @@ const SubMenuWrapper = styled(Box)(
             font-size: ${theme.typography.pxToRem(20)};
             margin-right: ${theme.spacing(1)};
           }
-          
+
           .MuiButton-endIcon {
             color: ${theme.colors.alpha.trueWhite[50]};
             margin-left: auto;
@@ -253,6 +253,7 @@ function SidebarMenu() {
   const TRIAL_DAYS = 15;
   const daysPassed = dayjs().diff(dayjs(company.createdAt), 'day');
   const daysLeft = TRIAL_DAYS - daysPassed;
+  const subscriptionPlan = company.subscription?.subscriptionPlan;
 
   useEffect(() => {
     if (user.id) {
@@ -260,12 +261,14 @@ function SidebarMenu() {
       if (user.role.code !== 'REQUESTER') dispatch(getPendingRequestsCount());
     }
   }, [user.id]);
+
   return (
     <>
       {isCloudVersion &&
         !company.demo &&
         user.ownsCompany &&
         !company.subscription.activated &&
+        subscriptionPlan &&
         user.superAccountRelations.length === 0 && (
           <Stack
             sx={{
@@ -283,7 +286,7 @@ function SidebarMenu() {
                 : `Your trial has ended`}
             </Typography>
             <Typography color={'white'} fontSize={'14px'}>
-              You are on the {company.subscription.subscriptionPlan.name} plan
+              You are on the {subscriptionPlan.name} plan
             </Typography>
             <Button
               component={Link}
@@ -342,7 +345,6 @@ function SidebarMenu() {
               return hasPermission && featured && inUiConfig;
             });
             if (index === 0) {
-              //ownItems
               sectionClone.items = sectionClone.items.map((item) => {
                 if (item.name === 'work_orders') {
                   item.badge = urgentCount > 0 ? urgentCount.toString() : null;
